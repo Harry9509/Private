@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.board.service.impl.BoardMapper">
+
+	<resultMap type="com.board.service.BoardVO" id="board">
+		<result property="uid" column="br_uid"/>
+		<result property="subject" column="br_subject"/>
+		<result property="content" column="br_content"/>
+		<result property="name" column="br_name"/>
+		<result property="password" column="br_password"/>
+		<result property="viewcnt" column="br_viewcnt"/>
+		<result property="regdate" column="br_regdate"/>
+		<!-- <collection property="fileList" column="br_uid" javaType="java.util.List" ofType="fileVO" select="com.board.service.impl.FileMapper.selectFilesByBoardUid"/> -->
+	</resultMap>
+
+	<select id="selectBoard" parameterType="boardVO" resultMap="board">
+		SELECT * 
+		FROM
+			board
+		WHERE
+			br_uid = #{uid}
+	</select>
+	
+	<update id="updateBoard" parameterType="boardVO">
+		<selectKey keyProperty="uid" resultType="int" order="AFTER">
+			<![CDATA[SELECT nvl(#{uid}, 0) FROM DUAL]]>
+		</selectKey>
+			UPDATE
+				board
+			SET 
+				br_subject = #{subject},
+				br_content = #{content}
+			WHERE
+				br_uid = #{uid}	
+	</update>
+	
+	<delete id="deleteBoard" parameterType="boardVO">
+		DELETE FROM
+			board
+		WHERE
+			br_uid = #{uid}
+	</delete>
+
+	<insert id="insertBoard" parameterType="boardVO">
+		<selectKey keyProperty="uid" resultType="int" order="AFTER">
+			<![CDATA[SELECT nvl(board_pk_seq.CURRVAL, 0) FROM DUAL]]>
+		</selectKey>
+	
+		INSERT INTO
+			BOARD (
+			br_uid, 
+			br_subject,
+			br_content,
+			br_name,
+			br_password
+		) VALUES (
+			board_pk_seq.NEXTVAL,
+			#{subject},
+			#{content},
+			#{name},
+			#{password}
+		)
+	</insert>
+
+	<select id="selectBoardList" parameterType="searchVO" resultType="egovMap">
+		SELECT
+			BR.* 
+		FROM (
+			SELECT A.*,
+				ROWNUM AS "rnum"
+			FROM
+				board A
+			ORDER BY
+				br_uid DESC
+		) BR
+		<![CDATA[
+			WHERE BR."rnum" >= #{firstIndex} + 1 AND BR."rnum" <= #{lastIndex}
+		]]>
+	</select>
+
+	<select id="selectBoardListTotCnt" resultType="int">
+		SELECT
+			count(*) totCnt
+		FROM
+			board
+	</select>
+</mapper>

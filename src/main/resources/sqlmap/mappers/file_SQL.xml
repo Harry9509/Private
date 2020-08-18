@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.board.service.impl.FileMapper">
+
+	<resultMap type="com.board.service.FileVO" id="file">
+		<result property="f_uid" column="f_uid"/>
+		<result property="br_uid" column="br_uid"/>
+		<result property="realPath" column="f_realpath"/>
+		<result property="originalName" column="f_originalname"/>
+	</resultMap>
+	
+	<insert id="insertFileDatas" parameterType="java.util.List">
+		<foreach collection="list" item="file" index="index" separator=" " open="INSERT ALL" close="SELECT * FROM DUAL">
+			INTO files (
+				f_uid,
+				br_uid,
+				f_realpath,
+				f_originalname
+			) VALUES (
+				get_file_seq,
+				#{file.br_uid},
+				#{file.realPath},
+				#{file.originalName}
+			)
+		</foreach>
+	</insert>
+	
+	<select id="selectFilesByBoardUid" parameterType="boardVO" resultMap="file">
+		SELECT * FROM files
+		WHERE br_uid = #{uid}
+	</select>
+	
+	<select id="selectFileByUid" parameterType="int" resultMap="file">
+		SELECT * FROM files
+		WHERE f_uid = #{uid}
+	</select>
+	
+	<delete id="deleteFileByBoardUid" parameterType="int">
+		DELETE FROM files WHERE br_uid = #{uid}
+	</delete>
+	
+	<delete id="deleteFileByUid" parameterType="java.util.List">
+		DELETE FROM files 
+		WHERE
+			<foreach collection="list" item="file" open=" " close=" " separator="OR"> 
+			f_uid = #{file.f_uid}
+			</foreach>
+	</delete>
+</mapper>
